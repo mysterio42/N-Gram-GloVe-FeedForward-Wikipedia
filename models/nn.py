@@ -38,6 +38,9 @@ class Glove:
             if it % 10000 == 0:
                 print(f'processed {it}/{sen_len}')
             n = len(sentence)
+            if n < 2:
+                continue
+
             for i in range(n):
                 wi = sentence[i]
 
