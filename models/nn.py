@@ -144,4 +144,4 @@ class Glove:
 
         nm = 'GD' if gd else 'ALS'
         dump_weights(f'glove_model_{nm}50', self.W, self.U)
-        plot_costs(costs)
+        plot_costs(costs,nm)

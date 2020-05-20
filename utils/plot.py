@@ -11,12 +11,12 @@ plt.rcParams['figure.dpi'] = 100
 plt.rcParams['savefig.dpi'] = 100
 
 
-def plot_costs(costs):
+def plot_costs(costs, nm):
     if not os.path.exists('figure'):
         os.makedirs('figure')
 
     plt.plot(costs)
-    plt.title('Training Losses')
+    plt.title(f'{nm} Training Losses')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.savefig(FIGURES_DIR + 'Figure_training' + '.png')
