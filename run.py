@@ -13,7 +13,9 @@ if __name__ == '__main__':
 
         exp = Exps()
         exp.load_params('weights/glove_model_50.npz', 'embeddings/w2i.json')
-
+        words = ['japan', 'japanese', 'england', 'english', 'australia', 'australian', 'china', 'chinese', 'italy',
+                 'italian', 'french', 'france', 'spain', 'spanish']
+        exp.visualize_countries(words)
         word = 'king'
 
         rets_analogy = exp.analogy(word, 'man', 'woman')
