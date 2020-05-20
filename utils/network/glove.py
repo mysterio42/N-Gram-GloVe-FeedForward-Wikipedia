@@ -1,4 +1,5 @@
 import glob
+import json
 import os
 import random
 import string
@@ -39,14 +40,24 @@ def dump_embedding(data, name):
     print(f'{name} saved at {path}')
 
 
+def dump_word_encoding(name, data):
+    if not os.path.exists(EMBEDDING_DIR):
+        os.makedirs(EMBEDDING_DIR.strip('/'))
+
+    path = EMBEDDING_DIR + name + '.json'
+    with open(path, 'w') as f:
+        json.dump(data, f)
+
+
 def load_weight(path):
-    return np.load(path)
+    npz = np.load(path)
+    return npz['arr_0'], npz['arr_1']
 
 
 def dump_weights(fn, W, U):
     if not os.path.exists(WEIGHTS_DIR):
         os.makedirs(WEIGHTS_DIR.strip('/'))
-    path = WEIGHTS_DIR + fn + 'npz'
+    path = WEIGHTS_DIR + fn
 
     arrays = [W, U.T]
     np.savez(path, *arrays)
@@ -78,3 +89,21 @@ def analogy(pos1, neg1, pos2, word2idx, idx2word, W):
     rets = {'equation': equation,
             'solution': solution}
     return rets
+
+
+def top_neighs(word, word2idx, idx2word, W, top_k=10):
+    V, D = W.shape
+
+    if word not in word2idx:
+        print(f'word: {word} not in the corpus')
+        return
+    word_encoding = word2idx[word]
+    word_vector = W[word_encoding]
+
+    distances = pairwise_distances(word_vector.reshape(1, D), W, metric='cosine').reshape(V)
+    idx = distances.argsort()[:top_k]
+
+    top_neighs = {}
+    top_neighs['word'] = word
+    top_neighs['neigh_dist'] = {idx2word[i]: distances[i] for i in idx if i != word_encoding}
+    return top_neighs
