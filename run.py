@@ -14,9 +14,11 @@ if __name__ == '__main__':
         exp = Exps()
         exp.load_params('weights/glove_model_50.npz', 'embeddings/w2i.json')
 
-        rets_analogy = exp.analogy('king', 'man', 'woman')
+        word = 'king'
 
-        rets_neighs = exp.top_neigs('king')
+        rets_analogy = exp.analogy(word, 'man', 'woman')
+
+        rets_neighs = exp.top_neigs(word)
 
         to_csv(rets_neighs)
 
