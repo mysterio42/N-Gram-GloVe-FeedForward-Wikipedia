@@ -3,8 +3,8 @@ from datetime import datetime
 import numpy as np
 
 from utils.network.glove import dump_embedding
-from utils.plot import plot_costs
 from utils.network.glove import dump_weights
+from utils.plot import plot_costs
 
 
 class Glove:
@@ -144,4 +144,4 @@ class Glove:
 
         nm = 'GD' if gd else 'ALS'
         dump_weights(f'glove_model_{nm}50', self.W, self.U)
-        plot_costs(costs,nm)
+        plot_costs(costs, nm)
