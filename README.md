@@ -121,14 +121,7 @@ king
 | king | 0.0750687 | 0.0893572 | 0.0900342 | 0.092791 |  0.10205 | 0.107328 | 0.108777 | 0.115705 | 0.120697 |
 
 
-# Expriment 2 - Word Analogy
-
-### Sub Experiment - Concatenate Input & Hidden Weights
-![](figures/Figure_visualize_concatenate.png)
-
-
-### Sub Experiment - Take the Average of two matrices
-![](figures/Figure_visualize_average.png)
+# Experiment 2 - Word Analogy
 
 ```text
 positive: king
@@ -146,11 +139,16 @@ equation: king - man + woman
 solution: queen
 ```
 
-# Expriment 3 - Visualize country analogies with t-SNE
+# Experiment 3 - Visualize country analogies with t-SNE
 ```text
 Countries: japan japanese england english australia australian china chinese italy italian french france spain spanish
 ```
+### Sub Experiment - Concatenate Input & Hidden Weights
+![](figures/Figure_visualize_concatenate.png)
 
+
+### Sub Experiment - Take the Average of two matrices
+![](figures/Figure_visualize_average.png)
 # Training Procedure
 ![](figures/Figure_training.png)
 
