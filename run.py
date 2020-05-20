@@ -1,5 +1,6 @@
 from models.embeddings import WikipediaEmbedding
 from models.nn import Glove
+from utils.data import to_csv
 from utils.exps import Exps
 from utils.network.glove import dump_weights, dump_word_encoding
 from utils.params import parse_args
@@ -16,6 +17,8 @@ if __name__ == '__main__':
         rets_analogy = exp.analogy('king', 'man', 'woman')
 
         rets_neighs = exp.top_neigs('king')
+
+        to_csv(rets_neighs)
 
         print(f'analogy: {rets_analogy} \n neighs: {rets_neighs}')
 
