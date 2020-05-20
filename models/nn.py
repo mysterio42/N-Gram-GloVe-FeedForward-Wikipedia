@@ -4,6 +4,7 @@ import numpy as np
 
 from utils.network.glove import dump_embedding
 from utils.plot import plot_costs
+from utils.network.glove import dump_weights
 
 
 class Glove:
@@ -141,4 +142,6 @@ class Glove:
                     numerator = self.fX[:, j].dot(self.target[:, j] - self.W.dot(self.U[j]) - self.b - self.mu)
                     self.c[j] = numerator / denominator
 
+        nm = 'GD' if gd else 'ALS'
+        dump_weights(f'glove_model_{nm}50', self.W, self.U)
         plot_costs(costs)
