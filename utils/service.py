@@ -1,9 +1,11 @@
 import json
 
 import numpy as np
+from sklearn.manifold import TSNE
 
 from utils.network.glove import analogy, top_neighs
 from utils.network.glove import load_weight
+from utils.plot import plot_countries
 
 
 class Exps:
@@ -25,9 +27,14 @@ class Exps:
         rets['method']['concat'] = analogy(pos1, neg1, pos2, self._word2idx, self._idx2word, self._W_concat)
         return rets
 
-    def top_neigs(self, word,top_k=10):
+    def top_neigs(self, word, top_k=10):
         rets = {}
         rets['method'] = {}
-        rets['method']['average'] = top_neighs(word, self._word2idx, self._idx2word, self._W_average,top_k)
-        rets['method']['concat'] = top_neighs(word, self._word2idx, self._idx2word, self._W_concat,top_k)
+        rets['method']['average'] = top_neighs(word, self._word2idx, self._idx2word, self._W_average, top_k)
+        rets['method']['concat'] = top_neighs(word, self._word2idx, self._idx2word, self._W_concat, top_k)
         return rets
+
+    def visualize_countries(self,words):
+        idx = [self._word2idx[w] for w in words]
+        plot_countries(TSNE().fit_transform(self._W_average)[idx], words,'average')
+        plot_countries(TSNE().fit_transform(self._W_concat)[idx], words,'concatenate')
