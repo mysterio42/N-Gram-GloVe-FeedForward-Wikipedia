@@ -5,6 +5,7 @@ import random
 import string
 
 import numpy as np
+from scipy.sparse import csr_matrix, save_npz, load_npz
 from sklearn.metrics.pairwise import pairwise_distances
 
 EMBEDDING_DIR = 'embeddings/'
@@ -40,6 +41,20 @@ def dump_embedding(data, name):
     print(f'{name} saved at {path}')
 
 
+def dump_pmi(data, name):
+    if not os.path.exists(EMBEDDING_DIR):
+        os.makedirs(EMBEDDING_DIR.strip('/'))
+
+    path = EMBEDDING_DIR + name + generate_model_name() + '.npz'
+
+    save_npz(path, csr_matrix(data))
+    print(f'{name} saved at {path}')
+
+
+def load_pmi(path):
+    return np.load(path)['arr_0']
+
+
 def dump_word_encoding(name, data):
     if not os.path.exists(EMBEDDING_DIR):
         os.makedirs(EMBEDDING_DIR.strip('/'))
@@ -54,6 +69,8 @@ def load_weight(path):
     return npz['arr_0'], npz['arr_1']
 
 
+
+
 def dump_weights(fn, W, U):
     if not os.path.exists(WEIGHTS_DIR):
         os.makedirs(WEIGHTS_DIR.strip('/'))
@@ -61,6 +78,15 @@ def dump_weights(fn, W, U):
 
     arrays = [W, U.T]
     np.savez(path, *arrays)
+    print(f'{fn} saved at {path}')
+
+
+def dump_pmi_weight(fn, W):
+    if not os.path.exists(WEIGHTS_DIR):
+        os.makedirs(WEIGHTS_DIR.strip('/'))
+    path = WEIGHTS_DIR + fn
+
+    np.savez(path, W)
     print(f'{fn} saved at {path}')
 
 
