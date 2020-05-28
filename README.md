@@ -153,6 +153,56 @@ Countries: japan japanese england english australia australian china chinese ita
 ![](figures/Figure_training.png)
 
 
+
+# Load PMI  model
+```shell
+python run.py --load yes
+```
+
+
+# Experiment 1 - Word Nearest Neighbours
+
+
+## Word
+```text
+king
+```
+## Top 10 Nearest Neghbours with distances
+|      |    prince |    throne |     duke |    henry |      iii |    queen |       iv |   charles |      son |
+|:-----|----------:|----------:|---------:|---------:|---------:|---------:|---------:|----------:|---------:|
+| king | 0.0888272 | 0.0973404 | 0.107005 | 0.111335 | 0.133846 | 0.139248 | 0.141681 |  0.144009 | 0.153965 |
+
+
+# Experiment 2 - Word Analogy
+
+```text
+positive: king
+```
+```text
+negative: man
+```
+```text
+positive: woman
+```
+```text
+equation: king - man + woman
+```
+```text
+solution: prince
+```
+
+# Experiment 3 - Visualize country analogies with t-SNE
+```text
+Countries: japan japanese england english australia australian china chinese italy italian french france spain spanish
+```
+![](figures/Figure_visualize_first.png)
+
+
+# Training Procedure
+![](figures/Figure_training(1).png)
+
+
+
 # Docker for the N-Gram GloVe model
 
 ## Build the Docker image
