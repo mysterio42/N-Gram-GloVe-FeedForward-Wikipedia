@@ -1,8 +1,10 @@
 from datetime import datetime
 
 import numpy as np
+from scipy.sparse import lil_matrix
+from sklearn.decomposition import TruncatedSVD
 
-from utils.network.glove import dump_embedding
+from utils.network.glove import dump_embedding, dump_pmi, dump_pmi_weight
 from utils.network.glove import dump_weights
 from utils.plot import plot_costs
 
@@ -23,8 +25,32 @@ class Glove:
         :return:
         """
         self.build_X()
-        self.weighting(xmax=100, alpha=0.75)
-        self.init_params()
+        self._weighting(xmax=100, alpha=0.75)
+        self._init_params()
+
+    def build_train_pmi(self):
+        self.build_pmi()
+        self._weigting_pmi()
+        self._init_params()
+        self._train_pmi()
+
+    def build_train_SVD(self):
+        self.build_X()
+        logX = np.log(self.X + 1)
+
+        mu = logX.mean()
+        model = TruncatedSVD(n_components=self.D)
+        Z = model.fit_transform(logX - mu)
+
+        S = np.diag(model.explained_variance_)
+        Sinv = np.linalg.inv(S)
+
+        self.W = Z.dot(Sinv)
+        self.U = model.components_.T
+
+        delta = self.W.dot(S).dot(self.U.T) + mu - logX
+        cost = (delta * delta).sum()
+        print("svd cost:", cost)
 
     def build_X(self):
         t0 = datetime.now()
@@ -74,7 +100,73 @@ class Glove:
         print("time to build co-occurrence matrix:", (datetime.now() - t0))
         dump_embedding(co_occurance, 'glove_model_50')
 
-    def weighting(self, xmax, alpha):
+    def build_pmi(self):
+        t0 = datetime.now()
+
+        wc_counts = lil_matrix((self.V, self.V))
+        sen_len = len(self.embedding.encoded_sentences)
+
+        print(f"number of sentences to process {sen_len}")
+        it = 0
+        for sentence in self.embedding.encoded_sentences:
+            it += 1
+            if it % 10000 == 0:
+                print(f'processed {it}/{sen_len}')
+            n = len(sentence)
+            if n < 2:
+                continue
+
+            for i, w in enumerate(sentence):
+
+                start = max(0, i - self.context_sz)
+                end = min(n, i + self.context_sz)
+
+                for c in sentence[start:i]:
+                    wc_counts[w, c] += 1
+                for c in sentence[i + 1:end]:
+                    wc_counts[w, c] += 1
+
+        self.wc_counts = wc_counts
+
+        print("time to build pmi counts:", (datetime.now() - t0))
+        dump_pmi(wc_counts, 'pmi_counts')
+
+    def _weigting_pmi(self, alpha=0.75):
+        c_counts = self.wc_counts.sum(axis=0).A.flatten() ** alpha
+        c_probs = c_counts / c_counts.sum()
+        c_probs = c_probs.reshape(1, self.V)
+
+        pmi = self.wc_counts.multiply(1.0 / self.wc_counts.sum(axis=1) / c_probs).tocsr()
+        logX = pmi.log1p()
+        logX[logX < 0] = 0
+        self.target = logX
+
+    def _train_pmi(self, epochs=10, reg=0.1):
+        costs = []
+        for epoch in range(epochs):
+            delta = self.W.dot(self.U.T) + self.b.reshape(self.V, 1) + self.c.reshape(1, self.V) + self.mu - self.target
+            cost = np.multiply(delta, delta).sum()
+            costs.append(cost)
+
+            matrix = reg * np.eye(self.D) + self.U.T.dot(self.U)
+            vector = (self.target - self.b.reshape(self.V, 1) - self.c.reshape(1, self.V) - self.mu).dot(self.U).T
+            self.W = np.linalg.solve(matrix, vector).T
+
+            self.b = (self.target - self.W.dot(self.U.T) - self.c.reshape(1, self.V) - self.mu).sum(axis=1) / self.V
+
+            matrix = reg * np.eye(self.D) + self.W.T.dot(self.W)
+            vector = (self.target - self.b.reshape(self.V, 1) - self.c.reshape(1, self.V) - self.mu).T.dot(self.W).T
+            self.U = np.linalg.solve(matrix, vector).T
+
+            self.c = (self.target - self.W.dot(self.U.T) - self.b.reshape(self.V, 1) - self.mu).sum(axis=0) / self.V
+
+            print(f'epoch: {epoch}/{epochs} cost: {cost}')
+
+        nm = 'ALS'
+        dump_pmi_weight(f'pmi_{nm}', self.W)
+        plot_costs(costs, nm)
+
+    def _weighting(self, xmax, alpha):
         print("max in X:", np.max(self.X))
 
         fX = np.zeros((self.V, self.V))
@@ -86,7 +178,7 @@ class Glove:
 
         print("max in f(X):", np.max(self.fX))
 
-    def init_params(self):
+    def _init_params(self):
         self.W = np.random.randn(self.V, self.D) / np.sqrt(self.V + self.D)
         self.b = np.zeros(self.V)
         self.U = np.random.randn(self.V, self.D) / np.sqrt(self.V + self.D)
